@@ -50,10 +50,6 @@ dependencies {
     implementation(libs.cli)
     implementation(libs.icpclive.cds.full)
     implementation(libs.icpclive.cds.utils)
-    implementation(libs.db.sqlite)
-    implementation(libs.exposed.core)
-    implementation(libs.exposed.dao)
-    implementation(libs.exposed.jdbc)
     implementation(libs.mongo.driver)
     implementation(libs.mongo.bson)
 }

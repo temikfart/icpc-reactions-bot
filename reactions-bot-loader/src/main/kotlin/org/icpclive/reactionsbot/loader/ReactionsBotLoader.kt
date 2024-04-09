@@ -8,6 +8,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.bson.types.ObjectId
 import org.icpclive.cds.InfoUpdate
 import org.icpclive.cds.RunUpdate
 import org.icpclive.cds.adapters.contestState
@@ -19,6 +20,7 @@ import org.icpclive.cds.api.MediaType
 import org.icpclive.cds.api.RunInfo
 import org.icpclive.cds.api.RunResult
 import org.icpclive.cds.cli.CdsCommandLineOptions
+import org.icpclive.reactionsbot.loader.db.MongoClient
 import org.icpclive.util.getLogger
 import java.nio.file.Path
 import java.util.*
@@ -37,23 +39,22 @@ class ReactionsBotLoader(
         .removeFrozenSubmissions()
         .processHiddenTeamsAndGroups()
         .processHiddenProblems()
-    private val storage = Storage()
-    private val alreadyProcessedReactionIds = TreeSet<Int>()
+    private val alreadyProcessedReactionIds = TreeSet<ObjectId>()
     private val contestInfo = CompletableDeferred<StateFlow<ContestInfo>>()
 
     private fun processReaction(scope: CoroutineScope, run: RunInfo, reactionUrl: String) {
-        val reaction = storage.addReactions(
+        val reactionVideoId = MongoClient.addReactionVideo(
             run.teamId.value,
             run.problemId.value,
             run.id.value,
             (run.result as? RunResult.ICPC)?.verdict?.isAccepted == true,
             reactionUrl
         )
-        if (reaction.id.value !in alreadyProcessedReactionIds) {
-            alreadyProcessedReactionIds.add(reaction.id.value)
+        if (reactionVideoId != null && reactionVideoId !in alreadyProcessedReactionIds) {
+            alreadyProcessedReactionIds.add(reactionVideoId)
             scope.launch(reactionsProcessingPool) {
                 Path.of("converted").createDirectories()
-                val outputFileName = "converted/${reaction.id.value}.mp4"
+                val outputFileName = "converted/${reactionVideoId}.mp4"
                 try {
                     convertVideo(videoPathPrefix + reactionUrl, outputFileName)
                 } catch (ignore: FfmpegException) {
