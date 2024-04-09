@@ -89,7 +89,7 @@ class ReactionsBotLoaderCommand : CliktCommand() {
         .flag()
     private val threads by option("--threads", "-t", help = "Count of video converter and loader threads")
         .int()
-        .default(8)
+        .default(Runtime.getRuntime().availableProcessors() - 1)
     private val video by option( help = "Prefix for video url")
         .default("")
 
