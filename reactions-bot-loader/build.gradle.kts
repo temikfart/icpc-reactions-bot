@@ -1,4 +1,11 @@
 import org.gradle.kotlin.dsl.run as runTask
+import io.github.cdimascio.dotenv.Dotenv
+
+buildscript {
+    dependencies {
+        classpath("io.github.cdimascio:dotenv-kotlin:6.4.1")
+    }
+}
 
 plugins {
     id("bot.app-conventions")
@@ -25,6 +32,16 @@ tasks.runTask {
     project.properties["live.dev.video"]?.let { args += listOf("--video", it.toString()) }
     project.properties["live.dev.config"]?.let { args += listOf("--config-directory", it.toString()) }
     this.args = args
+
+    val dotenv = Dotenv.configure()
+        .directory("${rootDir.path}/docker/reactions-bot")
+        .filename(".env")
+        .ignoreIfMissing()
+        .load()
+
+    dotenv.entries().forEach {
+        environment(it.key, it.value)
+    }
 }
 
 dependencies {
@@ -34,6 +51,11 @@ dependencies {
     implementation(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
 
+    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
+
     implementation("org.icpclive:org.icpclive.cds.full:0.11")
     implementation("org.icpclive:org.icpclive.cds.utils:0.11")
+
+    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:5.0.0")
+    implementation("org.mongodb:bson-kotlinx:5.0.0")
 }
