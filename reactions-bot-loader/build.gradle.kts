@@ -45,17 +45,15 @@ tasks.runTask {
 }
 
 dependencies {
+    implementation(libs.dotenv)
+
     implementation(libs.cli)
+    implementation(libs.icpclive.cds.full)
+    implementation(libs.icpclive.cds.utils)
     implementation(libs.db.sqlite)
     implementation(libs.exposed.core)
     implementation(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
-
-    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
-
-    implementation("org.icpclive:org.icpclive.cds.full:0.11")
-    implementation("org.icpclive:org.icpclive.cds.utils:0.11")
-
-    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:5.0.0")
-    implementation("org.mongodb:bson-kotlinx:5.0.0")
+    implementation(libs.mongo.driver)
+    implementation(libs.mongo.bson)
 }
