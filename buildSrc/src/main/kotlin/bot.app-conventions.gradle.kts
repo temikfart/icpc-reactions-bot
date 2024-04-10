@@ -8,16 +8,16 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
-tasks {
-    register<Sync>("release") {
-        destinationDir = rootDir.resolve("artifacts/")
-        preserve { include("*") }
-        from(tasks.named("shadowJar"))
-    }
-
-    shadowJar {
-        mergeServiceFiles()
-
-        archiveClassifier = null
-    }
-}
+//tasks {
+//    register<Sync>("release") {
+//        destinationDir = rootDir.resolve("artifacts/")
+//        preserve { include("*") }
+//        from(tasks.named("shadowJar"))
+//    }
+//
+//    shadowJar {
+//        mergeServiceFiles()
+//
+//        archiveClassifier = null
+//    }
+//}
