@@ -44,20 +44,12 @@ object MongoClient {
         reactionVideoCollection.withDocumentClass<ReactionVideo>()
             .find(eq(ReactionVideo::fileName.name, fileName))
             .firstOrNull()?.id
-            ?: insertReactionVideo(teamId, problemId, runId, isOk, fileName)
+            ?: insertReactionVideo(ReactionVideo(null, contestId, teamId, problemId, runId, isOk, fileName))
     }
 
-    private suspend fun insertReactionVideo(
-        teamId: String,
-        problemId: String,
-        runId: String,
-        isOk: Boolean,
-        fileName: String
-    ): ObjectId? = reactionVideoCollection
-        .insertOne(ReactionVideo(null, teamId, problemId, runId, isOk, fileName))
-        .insertedId
-        ?.asObjectId()
-        ?.value
+    private suspend fun insertReactionVideo(reactionVideo: ReactionVideo): ObjectId? =
+        reactionVideoCollection.insertOne(reactionVideo)
+            .insertedId?.asObjectId()?.value
 
     fun addOrReplaceContestInfoItem(contestId: String, contestInfo: ContestInfo): ObjectId? = runBlocking {
         val contestInfoItem = ContestInfoItem(null, contestId, contestInfo)

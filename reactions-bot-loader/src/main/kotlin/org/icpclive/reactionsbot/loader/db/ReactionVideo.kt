@@ -5,6 +5,7 @@ import org.bson.types.ObjectId
 
 data class ReactionVideo(
     @BsonId val id: ObjectId? = null,
+    val contestId: String,
     val teamId: String,
     val problemId: String,
     val runId: String,
