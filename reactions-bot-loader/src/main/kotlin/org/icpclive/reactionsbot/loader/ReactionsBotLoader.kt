@@ -23,6 +23,7 @@ import org.icpclive.cds.cli.CdsCommandLineOptions
 import org.icpclive.reactionsbot.loader.db.MongoClient
 import org.icpclive.util.getLogger
 import java.nio.file.Path
+import java.security.MessageDigest
 import java.util.*
 import kotlin.io.path.createDirectories
 
@@ -40,10 +41,12 @@ class ReactionsBotLoader(
         .processHiddenTeamsAndGroups()
         .processHiddenProblems()
     private val alreadyProcessedReactionIds = TreeSet<ObjectId>()
-    private val contestInfo = CompletableDeferred<StateFlow<ContestInfo>>()
+    private lateinit var contestId: String
 
     private fun processReaction(scope: CoroutineScope, run: RunInfo, reactionUrl: String) {
+        println(contestId)
         val reactionVideoId = MongoClient.addReactionVideo(
+            contestId,
             run.teamId.value,
             run.problemId.value,
             run.id.value,
@@ -65,22 +68,38 @@ class ReactionsBotLoader(
     }
 
     fun run(scope: CoroutineScope) {
-        val loaded = if (disableCdsLoader) emptyFlow() else cds.shareIn(scope, SharingStarted.Eagerly, Int.MAX_VALUE)
-        val runs = loaded.filterIsInstance<RunUpdate>().map { it.newInfo }
+        val loader = if (disableCdsLoader) emptyFlow() else cds.shareIn(scope, SharingStarted.Eagerly, Int.MAX_VALUE)
+        val runUpdates = loader.filterIsInstance<RunUpdate>().map { it.newInfo }
+        val infoUpdates = loader.filterIsInstance<InfoUpdate>().map { it.newInfo }
+
+        val contest = runBlocking { infoUpdates.first() }
+        // TODO: contest.name always empty. Trouble in synchronization.
+        contestId = hash(contest.name)
         scope.launch {
-            contestInfo.complete(loaded.filterIsInstance<InfoUpdate>().map { it.newInfo }.stateIn(scope))
-        }
-        scope.launch {
-            println("starting runs processing ...")
-            println("runs processing stated for ${contestInfo.await().value.currentContestTime}")
-            runs.collect { run ->
-                run.reactionVideos.forEach {
+            println("starting runUpdates processing ...")
+            println("runUpdates processing stated for ${contest.currentContestTime}")
+            runUpdates.collect { runUpdate ->
+                MongoClient.addRunInfoItem(contestId, runUpdate)
+                runUpdate.reactionVideos.forEach {
                     if (it is MediaType.M2tsVideo) {
-                        processReaction(scope, run, it.url)
+                        processReaction(scope, runUpdate, it.url)
                     }
                 }
             }
         }
+        scope.launch {
+            println("starting infoUpdates processing ...")
+            println("infoUpdates processing stated for ${contest.currentContestTime}")
+            infoUpdates.collect { infoUpdate ->
+                MongoClient.addOrReplaceContestInfoItem(contestId, infoUpdate)
+            }
+        }
+    }
+
+    private fun hash(data: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hash = digest.digest(data.toByteArray())
+        return Base64.getEncoder().encodeToString(hash)
     }
 }
 
