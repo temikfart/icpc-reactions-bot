@@ -41,10 +41,9 @@ class ReactionsBotLoader(
         .processHiddenTeamsAndGroups()
         .processHiddenProblems()
     private val alreadyProcessedReactionIds = TreeSet<ObjectId>()
-    private lateinit var contestId: String
+    private val contestId = "46th"
 
     private fun processReaction(scope: CoroutineScope, run: RunInfo, reactionUrl: String) {
-        println(contestId)
         val reactionVideoId = MongoClient.addReactionVideo(
             contestId,
             run.teamId.value,
@@ -73,8 +72,6 @@ class ReactionsBotLoader(
         val infoUpdates = loader.filterIsInstance<InfoUpdate>().map { it.newInfo }
 
         val contest = runBlocking { infoUpdates.first() }
-        // TODO: contest.name always empty. Trouble in synchronization.
-        contestId = hash(contest.name)
         scope.launch {
             println("starting runUpdates processing ...")
             println("runUpdates processing stated for ${contest.currentContestTime}")
@@ -94,12 +91,6 @@ class ReactionsBotLoader(
                 MongoClient.addOrReplaceContestInfoItem(contestId, infoUpdate)
             }
         }
-    }
-
-    private fun hash(data: String): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-        val hash = digest.digest(data.toByteArray())
-        return Base64.getEncoder().encodeToString(hash)
     }
 }
 
