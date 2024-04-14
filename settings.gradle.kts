@@ -9,5 +9,6 @@ dependencyResolutionManagement {
     }
 }
 
-include("reactions-bot")
-include("reactions-bot-loader")
+include(":reactions-bot")
+include(":reactions-bot-db")
+include(":reactions-bot-loader")

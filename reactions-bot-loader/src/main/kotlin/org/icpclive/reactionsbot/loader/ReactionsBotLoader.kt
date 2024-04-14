@@ -15,15 +15,13 @@ import org.icpclive.cds.adapters.contestState
 import org.icpclive.cds.adapters.processHiddenProblems
 import org.icpclive.cds.adapters.processHiddenTeamsAndGroups
 import org.icpclive.cds.adapters.removeFrozenSubmissions
-import org.icpclive.cds.api.ContestInfo
 import org.icpclive.cds.api.MediaType
 import org.icpclive.cds.api.RunInfo
 import org.icpclive.cds.api.RunResult
 import org.icpclive.cds.cli.CdsCommandLineOptions
-import org.icpclive.reactionsbot.loader.db.MongoClient
+import org.icpclive.reactionsbot.db.MongoClient
 import org.icpclive.util.getLogger
 import java.nio.file.Path
-import java.security.MessageDigest
 import java.util.*
 import kotlin.io.path.createDirectories
 

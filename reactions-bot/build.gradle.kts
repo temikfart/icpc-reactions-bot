@@ -50,6 +50,8 @@ dependencies {
     implementation(libs.cli)
     implementation(libs.icpclive.cds.full)
     implementation(libs.icpclive.cds.utils)
+
+    implementation(project(":reactions-bot-db"))
     implementation(libs.mongo.driver)
     implementation(libs.mongo.bson)
 }
