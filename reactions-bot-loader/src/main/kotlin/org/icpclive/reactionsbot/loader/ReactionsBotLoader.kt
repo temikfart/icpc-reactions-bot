@@ -19,7 +19,7 @@ import org.icpclive.cds.api.MediaType
 import org.icpclive.cds.api.RunInfo
 import org.icpclive.cds.api.RunResult
 import org.icpclive.cds.cli.CdsCommandLineOptions
-import org.icpclive.reactionsbot.db.MongoClient
+import org.icpclive.reactionsbot.db.Storage
 import org.icpclive.util.getLogger
 import java.nio.file.Path
 import java.util.*
@@ -42,7 +42,7 @@ class ReactionsBotLoader(
     private val contestId = "46th"
 
     private fun processReaction(scope: CoroutineScope, run: RunInfo, reactionUrl: String) {
-        val reactionVideoId = MongoClient.addReactionVideo(
+        val reactionVideoId = Storage.addReactionVideo(
             contestId,
             run.teamId.value,
             run.problemId.value,
@@ -74,7 +74,7 @@ class ReactionsBotLoader(
             println("starting runUpdates processing ...")
             println("runUpdates processing stated for ${contest.currentContestTime}")
             runUpdates.collect { runUpdate ->
-                MongoClient.addRunInfoItem(contestId, runUpdate)
+                Storage.addRunInfoItem(contestId, runUpdate)
                 runUpdate.reactionVideos.forEach {
                     if (it is MediaType.M2tsVideo) {
                         processReaction(scope, runUpdate, it.url)
@@ -86,7 +86,7 @@ class ReactionsBotLoader(
             println("starting infoUpdates processing ...")
             println("infoUpdates processing stated for ${contest.currentContestTime}")
             infoUpdates.collect { infoUpdate ->
-                MongoClient.addOrReplaceContestInfoItem(contestId, infoUpdate)
+                Storage.addOrReplaceContestInfoItem(contestId, infoUpdate)
             }
         }
     }
