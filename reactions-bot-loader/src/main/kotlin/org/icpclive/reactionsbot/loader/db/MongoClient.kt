@@ -20,14 +20,13 @@ object MongoClient {
     private val client = MongoClient.create(connectionUrl)
     private val database = client.getDatabase(databaseName)
 
-    private var reactionVideoCollection: MongoCollection<ReactionVideo>
+    private var reactionVideosCollection: MongoCollection<ReactionVideo>
     private var contestInfoItemsCollection: MongoCollection<ContestInfoItem>
     private var runInfoItemsCollection: MongoCollection<RunInfoItem>
 
     init {
         runBlocking {
-            database.createCollection("ReactionVideos")
-            reactionVideoCollection = database.getCollection("ReactionVideos")
+            reactionVideosCollection = database.getCollection("ReactionVideos")
             contestInfoItemsCollection = database.getCollection("ContestInfoItems")
             runInfoItemsCollection = database.getCollection("RunInfoItems")
         }
@@ -41,14 +40,14 @@ object MongoClient {
         isOk: Boolean,
         fileName: String
     ): ObjectId? = runBlocking {
-        reactionVideoCollection.withDocumentClass<ReactionVideo>()
+        reactionVideosCollection.withDocumentClass<ReactionVideo>()
             .find(eq(ReactionVideo::fileName.name, fileName))
             .firstOrNull()?.id
             ?: insertReactionVideo(ReactionVideo(null, contestId, teamId, problemId, runId, isOk, fileName))
     }
 
     private suspend fun insertReactionVideo(reactionVideo: ReactionVideo): ObjectId? =
-        reactionVideoCollection.insertOne(reactionVideo)
+        reactionVideosCollection.insertOne(reactionVideo)
             .insertedId?.asObjectId()?.value
 
     fun addOrReplaceContestInfoItem(contestId: String, contestInfo: ContestInfo): ObjectId? = runBlocking {
