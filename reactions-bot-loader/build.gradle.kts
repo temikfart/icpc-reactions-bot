@@ -31,6 +31,7 @@ tasks.runTask {
     val args = mutableListOf<String>()
     project.properties["live.dev.video"]?.let { args += listOf("--video", it.toString()) }
     project.properties["live.dev.config"]?.let { args += listOf("--config-directory", it.toString()) }
+    project.properties["live.dev.threads"]?.let { args += listOf("--threads", it.toString()) }
     this.args = args
 
     val dotenv = Dotenv.configure()
