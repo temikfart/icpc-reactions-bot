@@ -1,6 +1,6 @@
 package org.icpclive.reactionsbot.db.repositories
 
-import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Filters.eq
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import org.bson.types.ObjectId
@@ -17,7 +17,7 @@ object ReactionVideoRepository {
         fileName: String
     ): ObjectId? = runBlocking {
         MongoClient.reactionVideosCollection.withDocumentClass<ReactionVideo>()
-            .find(Filters.eq(ReactionVideo::fileName.name, fileName))
+            .find(eq(ReactionVideo::fileName.name, fileName))
             .firstOrNull()?.id
             ?: insert(ReactionVideo(null, contestId, teamId, problemId, runId, isOk, fileName))
     }
@@ -25,4 +25,10 @@ object ReactionVideoRepository {
     private suspend fun insert(reactionVideo: ReactionVideo): ObjectId? =
         MongoClient.reactionVideosCollection.insertOne(reactionVideo)
             .insertedId?.asObjectId()?.value
+
+    fun getById(id: ObjectId): ReactionVideo? = runBlocking {
+        MongoClient.reactionVideosCollection.withDocumentClass<ReactionVideo>()
+            .find(eq(ReactionVideo::id.name, id))
+            .firstOrNull()
+    }
 }

@@ -1,6 +1,7 @@
 package org.icpclive.reactionsbot.db.repositories
 
-import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Filters.eq
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import org.bson.types.ObjectId
 import org.icpclive.cds.api.ContestInfo
@@ -11,7 +12,7 @@ object ContestInfoItemRepository {
     fun addOrReplace(contestId: String, contestInfo: ContestInfo): ObjectId? = runBlocking {
         val contestInfoItem = ContestInfoItem(null, contestId, contestInfo)
         val updateResult = MongoClient.contestInfoItemsCollection
-            .replaceOne(Filters.eq(ContestInfoItem::contestId.name, contestId), contestInfoItem)
+            .replaceOne(eq(ContestInfoItem::contestId.name, contestId), contestInfoItem)
 
         val notReplaced = updateResult.matchedCount == 0L
         if (notReplaced) {
@@ -24,4 +25,10 @@ object ContestInfoItemRepository {
     private suspend fun insert(contestInfoItem: ContestInfoItem): ObjectId? =
         MongoClient.contestInfoItemsCollection.insertOne(contestInfoItem)
             .insertedId?.asObjectId()?.value
+
+    fun getById(contestId: String): ContestInfoItem? = runBlocking {
+        MongoClient.contestInfoItemsCollection.withDocumentClass<ContestInfoItem>()
+            .find(eq(ContestInfoItem::contestId.name, contestId))
+            .firstOrNull()
+    }
 }

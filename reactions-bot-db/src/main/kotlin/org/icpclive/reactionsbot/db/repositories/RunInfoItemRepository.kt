@@ -1,6 +1,6 @@
 package org.icpclive.reactionsbot.db.repositories
 
-import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Filters.eq
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import org.bson.types.ObjectId
@@ -11,7 +11,7 @@ import org.icpclive.reactionsbot.db.documents.RunInfoItem
 object RunInfoItemRepository {
     fun add(contestId: String, runInfo: RunInfo): ObjectId? = runBlocking {
         MongoClient.runInfoItemsCollection.withDocumentClass<RunInfoItem>()
-            .find(Filters.eq("${RunInfoItem::runInfo.name}.${RunInfo::id.name}", runInfo.id))
+            .find(eq("${RunInfoItem::runInfo.name}.${RunInfo::id.name}", runInfo.id))
             .firstOrNull()?.id
             ?: insert(RunInfoItem(null, contestId, runInfo))
 
