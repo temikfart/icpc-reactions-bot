@@ -38,34 +38,14 @@ class ReactionsBotLoader(
         .removeFrozenSubmissions()
         .processHiddenTeamsAndGroups()
         .processHiddenProblems()
-    private val alreadyProcessedReactionIds = TreeSet<ObjectId>()
+    private val alreadyProcessedRunIds = TreeSet<ObjectId>()
     private val contestId = "46th"
 
-    private fun processReaction(scope: CoroutineScope, run: RunInfo, reactionUrl: String) {
-        val reactionVideoId = Storage.addReactionVideo(
-            contestId,
-            run.teamId.value,
-            run.problemId.value,
-            run.id.value,
-            (run.result as? RunResult.ICPC)?.verdict?.isAccepted == true,
-            reactionUrl
-        )
-        if (reactionVideoId != null && reactionVideoId !in alreadyProcessedReactionIds) {
-            alreadyProcessedReactionIds.add(reactionVideoId)
-            scope.launch(reactionsProcessingPool) {
-                Path.of("converted").createDirectories()
-                val outputFileName = "converted/${reactionVideoId}.mp4"
-                try {
-                    convertVideo(videoPathPrefix + reactionUrl, outputFileName)
-                } catch (ignore: FfmpegException) {
-                    println(ignore)
-                }
-            }
-        }
-    }
-
     fun run(scope: CoroutineScope) {
-        val loader = if (disableCdsLoader) emptyFlow() else cds.shareIn(scope, SharingStarted.Eagerly, Int.MAX_VALUE)
+        val loader = when (disableCdsLoader) {
+            true -> emptyFlow()
+            false -> cds.shareIn(scope, SharingStarted.Eagerly, Int.MAX_VALUE)
+        }
         val runUpdates = loader.filterIsInstance<RunUpdate>().map { it.newInfo }
         val infoUpdates = loader.filterIsInstance<InfoUpdate>().map { it.newInfo }
 
@@ -74,11 +54,10 @@ class ReactionsBotLoader(
             println("starting runUpdates processing ...")
             println("runUpdates processing stated for ${contest.currentContestTime}")
             runUpdates.collect { runUpdate ->
-                Storage.addRunInfoItem(contestId, runUpdate)
-                runUpdate.reactionVideos.forEach {
-                    if (it is MediaType.M2tsVideo) {
-                        processReaction(scope, runUpdate, it.url)
-                    }
+                val acceptedRun = (runUpdate.result as? RunResult.ICPC)?.verdict?.isAccepted == true
+                when (acceptedRun) {
+                    true -> processRun(scope, runUpdate, acceptedRun)
+                    false -> println("Run is not accepted: ${runUpdate.id}. Skipping")
                 }
             }
         }
@@ -87,6 +66,35 @@ class ReactionsBotLoader(
             println("infoUpdates processing stated for ${contest.currentContestTime}")
             infoUpdates.collect { infoUpdate ->
                 Storage.addOrReplaceContestInfoItem(contestId, infoUpdate)
+            }
+        }
+    }
+
+    private fun processRun(scope: CoroutineScope, runUpdate: RunInfo, acceptedRun: Boolean) {
+        val runInfoItemId = Storage.addRunInfoItem(contestId, runUpdate, acceptedRun)
+        if (runInfoItemId != null) {
+            runUpdate.reactionVideos.forEach {
+                if (it is MediaType.M2tsVideo) {
+                    processReactionVideo(scope, runInfoItemId, it.url)
+                }
+            }
+        } else {
+            println("Error adding runInfo")
+        }
+    }
+
+    private fun processReactionVideo(scope: CoroutineScope, runInfoItemId: ObjectId, reactionUrl: String) {
+        if (runInfoItemId !in alreadyProcessedRunIds) {
+            alreadyProcessedRunIds.add(runInfoItemId)
+            scope.launch(reactionsProcessingPool) {
+                try {
+                    Path.of("converted").createDirectories()
+                    val outputFileName = "converted/${runInfoItemId}.mp4"
+                    Storage.addReactionVideo(contestId, runInfoItemId, outputFileName)
+                    convertVideo(videoPathPrefix + reactionUrl, outputFileName)
+                } catch (ignore: FfmpegException) {
+                    println(ignore)
+                }
             }
         }
     }
