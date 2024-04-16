@@ -8,4 +8,5 @@ data class RunInfoItem(
     @BsonId val id: ObjectId? = null,
     val contestId: String,
     val runInfo: RunInfo,
+    val isOk: Boolean,
 )

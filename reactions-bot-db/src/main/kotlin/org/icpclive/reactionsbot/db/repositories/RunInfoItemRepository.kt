@@ -9,11 +9,11 @@ import org.icpclive.reactionsbot.db.MongoClient
 import org.icpclive.reactionsbot.db.documents.RunInfoItem
 
 object RunInfoItemRepository {
-    fun add(contestId: String, runInfo: RunInfo): ObjectId? = runBlocking {
+    fun add(contestId: String, runInfo: RunInfo, accepted: Boolean): ObjectId? = runBlocking {
         MongoClient.runInfoItemsCollection.withDocumentClass<RunInfoItem>()
             .find(eq("${RunInfoItem::runInfo.name}.${RunInfo::id.name}", runInfo.id))
             .firstOrNull()?.id
-            ?: insert(RunInfoItem(null, contestId, runInfo))
+            ?: insert(RunInfoItem(null, contestId, runInfo, accepted))
 
     }
 

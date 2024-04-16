@@ -6,9 +6,6 @@ import org.bson.types.ObjectId
 data class ReactionVideo(
     @BsonId val id: ObjectId? = null,
     val contestId: String,
-    val teamId: String,
-    val problemId: String,
-    val runId: String,
-    val isOk: Boolean,
+    val runInfoItemId: ObjectId,
     val fileName: String,
 )

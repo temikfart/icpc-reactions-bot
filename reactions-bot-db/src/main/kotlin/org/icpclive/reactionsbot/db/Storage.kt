@@ -26,26 +26,17 @@ object Storage {
         voteCount: Int = 0
     ): ObjectId? = ReactionRepository.add(reactionVideoId, telegramFileId, rating, voteCount)
 
-    fun addVote(
-        reactionId: ObjectId,
-        chatId: Long,
-        vote: Int? = null
-    ): ObjectId? = VoteRepository.add(reactionId, chatId, vote)
+    fun addVote(reactionId: ObjectId, chatId: Long, vote: Int? = null): ObjectId? =
+        VoteRepository.add(reactionId, chatId, vote)
 
-    fun addReactionVideo(
-        contestId: String,
-        teamId: String,
-        problemId: String,
-        runId: String,
-        isOk: Boolean,
-        fileName: String
-    ): ObjectId? = ReactionVideoRepository.add(contestId, teamId, problemId, runId, isOk, fileName)
+    fun addReactionVideo(contestId: String, runId: ObjectId, fileName: String): ObjectId? =
+        ReactionVideoRepository.add(contestId, runId, fileName)
 
     fun addOrReplaceContestInfoItem(contestId: String, contestInfo: ContestInfo): ObjectId? =
         ContestInfoItemRepository.addOrReplace(contestId, contestInfo)
 
-    fun addRunInfoItem(contestId: String, runInfo: RunInfo): ObjectId? =
-        RunInfoItemRepository.add(contestId, runInfo)
+    fun addRunInfoItem(contestId: String, runInfo: RunInfo, accepted: Boolean): ObjectId? =
+        RunInfoItemRepository.add(contestId, runInfo, accepted)
 
     fun getReactionForVote(chatId: Long): Reaction? = runBlocking {
         val reactionsFlow = ReactionRepository

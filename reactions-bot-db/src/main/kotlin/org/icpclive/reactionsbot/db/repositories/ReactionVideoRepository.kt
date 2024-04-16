@@ -8,18 +8,11 @@ import org.icpclive.reactionsbot.db.MongoClient
 import org.icpclive.reactionsbot.db.documents.ReactionVideo
 
 object ReactionVideoRepository {
-    fun add(
-        contestId: String,
-        teamId: String,
-        problemId: String,
-        runId: String,
-        isOk: Boolean,
-        fileName: String
-    ): ObjectId? = runBlocking {
+    fun add(contestId: String, runId: ObjectId, fileName: String): ObjectId? = runBlocking {
         MongoClient.reactionVideosCollection.withDocumentClass<ReactionVideo>()
             .find(eq(ReactionVideo::fileName.name, fileName))
             .firstOrNull()?.id
-            ?: insert(ReactionVideo(null, contestId, teamId, problemId, runId, isOk, fileName))
+            ?: insert(ReactionVideo(null, contestId, runId, fileName))
     }
 
     private suspend fun insert(reactionVideo: ReactionVideo): ObjectId? =
