@@ -89,8 +89,8 @@ class ReactionsBot(
             return
         }
 
-        val contestInfo = Storage.getContestInfo(reactionVideo.contestId)?.contestInfo
-        if (contestInfo == null) {
+        val contestInfoItem = Storage.getContestInfo(reactionVideo.contestId)
+        if (contestInfoItem == null) {
             bot.sendMessage(
                 ChatId.fromId(botSystemChat),
                 "[${chat.id}] No such contest with ID ${reactionVideo.contestId}"
@@ -101,8 +101,8 @@ class ReactionsBot(
         var caption: String? = null
         val runInfo = runInfoItem.runInfo
         if (sendAdditionalInfo) {
-            contestInfo.teams[runInfo.teamId]?.let { team ->
-                contestInfo.problems[runInfo.problemId]?.let { problem ->
+            contestInfoItem.teams[runInfo.teamId.value]?.let { team ->
+                contestInfoItem.problems[runInfo.problemId.value]?.let { problem ->
                     caption = "${team.fullName}, problem ${problem.displayName}"
                 }
             }

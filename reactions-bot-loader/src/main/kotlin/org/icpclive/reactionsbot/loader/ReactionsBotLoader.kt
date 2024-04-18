@@ -66,7 +66,9 @@ class ReactionsBotLoader(
             println("starting infoUpdates processing ...")
             println("infoUpdates processing stated for ${contest.currentContestTime}")
             infoUpdates.collect { infoUpdate ->
-                Storage.addOrReplaceContestInfoItem(contestId, infoUpdate)
+                val teams = infoUpdate.teams.entries.associateBy({ it.key.value }, { it.value })
+                val problems = infoUpdate.problems.entries.associateBy({ it.key.value }, { it.value })
+                Storage.addOrReplaceContestInfoItem(contestId, teams, problems)
             }
         }
     }

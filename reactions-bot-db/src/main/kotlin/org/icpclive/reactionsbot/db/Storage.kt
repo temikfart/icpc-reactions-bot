@@ -1,14 +1,14 @@
 package org.icpclive.reactionsbot.db
 
 import com.mongodb.client.model.Filters.eq
-import com.mongodb.client.model.Filters.ne
 import com.mongodb.client.model.Sorts
 import com.mongodb.client.model.Sorts.orderBy
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import org.bson.types.ObjectId
-import org.icpclive.cds.api.ContestInfo
+import org.icpclive.cds.api.ProblemInfo
 import org.icpclive.cds.api.RunInfo
+import org.icpclive.cds.api.TeamInfo
 import org.icpclive.reactionsbot.db.documents.*
 import org.icpclive.reactionsbot.db.repositories.*
 
@@ -26,8 +26,11 @@ object Storage {
     fun addReactionVideo(contestId: String, runId: ObjectId, fileName: String): ObjectId? =
         ReactionVideoRepository.add(contestId, runId, fileName)
 
-    fun addOrReplaceContestInfoItem(contestId: String, contestInfo: ContestInfo): ObjectId? =
-        ContestInfoItemRepository.addOrReplace(contestId, contestInfo)
+    fun addOrReplaceContestInfoItem(
+        contestId: String,
+        teams: Map<String, TeamInfo>,
+        problems: Map<String, ProblemInfo>
+    ): ObjectId? = ContestInfoItemRepository.addOrReplace(contestId, teams, problems)
 
     fun addRunInfoItem(contestId: String, runInfo: RunInfo, accepted: Boolean): ObjectId? =
         RunInfoItemRepository.add(contestId, runInfo, accepted)
