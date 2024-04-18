@@ -4,18 +4,12 @@ import com.mongodb.client.model.Filters.eq
 import com.mongodb.client.model.Filters.ne
 import com.mongodb.client.model.Sorts
 import com.mongodb.client.model.Sorts.orderBy
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import org.bson.types.ObjectId
 import org.icpclive.cds.api.ContestInfo
 import org.icpclive.cds.api.RunInfo
-import org.icpclive.reactionsbot.db.documents.ContestInfoItem
-import org.icpclive.reactionsbot.db.documents.Reaction
-import org.icpclive.reactionsbot.db.documents.ReactionVideo
-import org.icpclive.reactionsbot.db.documents.Vote
+import org.icpclive.reactionsbot.db.documents.*
 import org.icpclive.reactionsbot.db.repositories.*
 
 object Storage {
@@ -40,16 +34,20 @@ object Storage {
 
     fun getReactionForVote(chatId: Long): Reaction? = runBlocking {
         val reactionsFlow = ReactionRepository
-            .getAllByFilter(ne(Reaction::telegramFileId.name, null))
+            .getAll()
             .sort(orderBy(Sorts.ascending(Reaction::voteCount.name)))
+        println("Found ${reactionsFlow.count()} reactions")
 
         val votedReactionIds = VoteRepository
             .getAllByFilter(eq(Vote::chatId.name, chatId))
             .map { it.id }
             .filterNotNull()
             .toList()
+        println("Found ${votedReactionIds.size} voted reactions")
 
-        reactionsFlow.firstOrNull { it.id !in votedReactionIds }
+        val reaction = reactionsFlow.firstOrNull { it.id !in votedReactionIds }
+        println("Reaction for vote: $reaction")
+        reaction
     }
 
     fun getReactionVideo(reactionVideoId: ObjectId): ReactionVideo? =
@@ -69,4 +67,7 @@ object Storage {
         }
         addVote(reactionId, chatId, delta)
     }
+
+    fun getRunInfoItem(runInfoItemId: ObjectId): RunInfoItem? =
+        RunInfoItemRepository.getById(runInfoItemId)
 }

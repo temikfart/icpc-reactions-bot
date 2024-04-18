@@ -17,7 +17,7 @@ object ReactionRepository {
         voteCount: Int
     ): ObjectId? = runBlocking {
         MongoClient.reactionsCollection.withDocumentClass<Reaction>()
-            .find(eq(Reaction::telegramFileId.name, telegramFileId))
+            .find(eq(Reaction::reactionVideoId.name, reactionVideoId))
             .firstOrNull()?.id
             ?: insert(Reaction(null, reactionVideoId, telegramFileId, rating, voteCount))
     }
@@ -29,6 +29,10 @@ object ReactionRepository {
     fun getAllByFilter(filter: Bson): FindFlow<Reaction> =
         MongoClient.reactionsCollection.withDocumentClass<Reaction>()
             .find(filter)
+
+    fun getAll(): FindFlow<Reaction> =
+        MongoClient.reactionsCollection.withDocumentClass<Reaction>()
+            .find()
 
     fun getById(id: ObjectId): Reaction? = runBlocking {
         MongoClient.reactionsCollection.withDocumentClass<Reaction>()
