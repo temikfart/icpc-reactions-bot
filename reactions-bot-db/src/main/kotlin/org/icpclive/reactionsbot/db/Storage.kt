@@ -43,7 +43,7 @@ object Storage {
 
         val votedReactionIds = VoteRepository
             .getAllByFilter(eq(Vote::chatId.name, chatId))
-            .map { it.id }
+            .map { it.reactionId }
             .filterNotNull()
             .toList()
         println("Found ${votedReactionIds.size} voted reactions")

@@ -1,5 +1,6 @@
 package org.icpclive.reactionsbot.db.repositories
 
+import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.Filters.eq
 import com.mongodb.kotlin.client.coroutine.FindFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -16,7 +17,12 @@ object VoteRepository {
         vote: Int?
     ): ObjectId? = runBlocking {
         MongoClient.votesCollection.withDocumentClass<Vote>()
-            .find(eq(Vote::chatId.name, chatId))
+            .find(
+                and(
+                    eq(Vote::chatId.name, chatId),
+                    eq(Vote::reactionId.name, reactionId)
+                )
+            )
             .firstOrNull()?.id
             ?: insert(Vote(null, reactionId, chatId, vote))
     }
