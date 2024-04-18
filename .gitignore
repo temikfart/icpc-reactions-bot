@@ -31,3 +31,6 @@ build
 
 # IDEA
 .idea
+
+# Media
+*.mp4
