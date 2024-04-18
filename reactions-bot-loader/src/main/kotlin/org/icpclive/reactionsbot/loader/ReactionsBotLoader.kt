@@ -21,6 +21,7 @@ import org.icpclive.cds.api.RunResult
 import org.icpclive.cds.cli.CdsCommandLineOptions
 import org.icpclive.reactionsbot.db.Storage
 import org.icpclive.util.getLogger
+import java.io.File
 import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.createDirectories
@@ -90,7 +91,12 @@ class ReactionsBotLoader(
                 try {
                     Path.of("converted").createDirectories()
                     val outputFileName = "converted/${runInfoItemId}.mp4"
-                    Storage.addReactionVideo(contestId, runInfoItemId, outputFileName)
+                    val reactionVideoId = Storage.addReactionVideo(
+                        contestId,
+                        runInfoItemId,
+                        File(outputFileName).absolutePath
+                    )
+                    Storage.addReaction(reactionVideoId!!) // TODO: add null check
                     convertVideo(videoPathPrefix + reactionUrl, outputFileName)
                 } catch (ignore: FfmpegException) {
                     println(ignore)
