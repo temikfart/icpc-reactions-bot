@@ -21,7 +21,7 @@ object ReactionVideoRepository {
 
     fun getById(id: ObjectId): ReactionVideo? = runBlocking {
         MongoClient.reactionVideosCollection.withDocumentClass<ReactionVideo>()
-            .find(eq(ReactionVideo::id.name, id))
+            .find(eq("_id", id))
             .firstOrNull()
     }
 }

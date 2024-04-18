@@ -32,7 +32,7 @@ object ReactionRepository {
 
     fun getById(id: ObjectId): Reaction? = runBlocking {
         MongoClient.reactionsCollection.withDocumentClass<Reaction>()
-            .find(eq(Reaction::id.name, id))
+            .find(eq("_id", id))
             .firstOrNull()
     }
 
