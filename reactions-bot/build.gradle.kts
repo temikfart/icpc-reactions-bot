@@ -14,6 +14,14 @@ plugins {
 repositories {
     mavenCentral()
     maven {
+        name = "jitpack"
+        url = uri("https://jitpack.io")
+        content {
+            // This limits this repo to this group
+            includeGroup("io.github.kotlin-telegram-bot.kotlin-telegram-bot")
+        }
+    }
+    maven {
         name = "GitHubPackages"
         url = uri("https://maven.pkg.github.com/icpc/live-v3")
         credentials {
@@ -50,6 +58,7 @@ dependencies {
     implementation(libs.cli)
     implementation(libs.icpclive.cds.full)
     implementation(libs.icpclive.cds.utils)
+    implementation(libs.telegram.bot)
 
     implementation(project(":reactions-bot-db"))
     implementation(libs.mongo.driver)
